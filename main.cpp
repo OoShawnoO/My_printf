@@ -65,7 +65,7 @@ void process_int(unsigned int d,int count){
 }
 
 
-void Switch(char **c,va_list* v,int counts,char* first){
+void Switch(char **c,va_list* v,int counts,char* first,int flag){
 
     switch(**c){
         case '.':{
@@ -79,7 +79,9 @@ void Switch(char **c,va_list* v,int counts,char* first){
             }
             switch(**c){
                 case 'f':{
-                    space(counts);
+                    if(flag!=1){
+                        space(counts);
+                    }
                     double f = va_arg(*v, double);
                     f = f * pow(10.0,count);
                     int d = floor(double(f));
@@ -88,11 +90,16 @@ void Switch(char **c,va_list* v,int counts,char* first){
                         d = -(d);
                     }
                     process_int(d,count);
+                    if(flag==1){
+                        space(counts);
+                    }
 
                 }
                 case 'l':{
                     if(*(*c+1)=='f'){
-                        space(counts);
+                        if(flag!=1){
+                            space(counts);
+                        }
                         double lf = va_arg(*v,double);
                         lf = lf * pow(10.0,count); /*保留 12 位*/
                         long long int d = floor(lf);
@@ -102,6 +109,9 @@ void Switch(char **c,va_list* v,int counts,char* first){
                             d = -(d);
                         }
                         process_int(d,count);
+                        if(flag==1){
+                            space(counts);
+                        }
                     }
                     else{
                         break;
@@ -118,7 +128,10 @@ void Switch(char **c,va_list* v,int counts,char* first){
             所以我采取f*10000000方便处理,省略小数点后7位以后的小数
          * */
         case 'f':{
-            space(counts);
+            if(flag!=1){
+                space(counts);
+            }
+
             float f = va_arg(*v, double);
             f = f * 10000000;
             int d = floor(double(f));
@@ -127,11 +140,17 @@ void Switch(char **c,va_list* v,int counts,char* first){
                 d = -(d);
             }
             process_int(d,7);
+            if(flag==1){
+                space(counts);
+            }
         }
         case 'l':{
             if(*(*c+1)=='f'){
                 /*double：2^52 = 4503599627370496，一共16位，同理，double的精度为15~16位。 */
-                space(counts);
+                if(flag!=1){
+                    space(counts);
+                }
+
                 double lf = va_arg(*v,double);
                 lf = lf * 100000000000000; /*保留 14 位*/
                 long long int d = floor(lf);
@@ -140,40 +159,64 @@ void Switch(char **c,va_list* v,int counts,char* first){
                     d = -(d);
                 }
                 process_int(d,14);
+                if(flag==1){
+                    space(counts);
+                }
+
             }
             break;
         }
         case 'd': {
-            space(counts);
+            if(flag!=1){
+                space(counts);
+            }
             int d = va_arg(*v,int);
             if(d<0){
                 putchar('-');
                 d = -(d);
             }
             process_int(d,100);
+            if(flag==1){
+                space(counts);
+            }
             break;
         }
         case 's':{
-            space(counts);
+            if(flag!=1){
+                space(counts);
+            }
             char* str = va_arg(*v,char*);
             while(*(str)!='\0'){
                 putchar(*str);
                 str++;
             }
+            if(flag==1){
+                space(counts);
+            }
             break;
         }
         case 'c':{
-            space(counts);
+            if(flag!=1){
+                space(counts);
+            }
             char ca = **v;
             va_arg(*v,char*);
             putchar(ca);
+            if(flag==1){
+                space(counts);
+            }
             break;
 
         }
         case 'u':{
-            space(counts);
+            if(flag!=1){
+                space(counts);
+            }
             unsigned int d = va_arg(*v,unsigned int);
             process_int(d,100);
+            if(flag==1){
+                space(counts);
+            }
             break;
 
         }
@@ -187,7 +230,9 @@ void Switch(char **c,va_list* v,int counts,char* first){
             %x,%X 读入十六进制整数
          */
         case 'i':{
-            space(counts);
+            if(flag!=1){
+                space(counts);
+            }
             /*%d %i在 printf 格式串中使用时，没有区别*/
             int d = va_arg(*v,int);
             if(d<0){
@@ -195,36 +240,54 @@ void Switch(char **c,va_list* v,int counts,char* first){
                 d = -(d);
             }
             process_int(d,100);
+            if(flag==1){
+                space(counts);
+            }
             break;
 
         }
         case 'o':{
-            space(counts);
+            if(flag!=1){
+                space(counts);
+            }
             int d = va_arg(*v,int);
             if(d<0){
                 putchar('-');
                 d = -(d);
             }
             process_int(d,100);
+            if(flag==1){
+                space(counts);
+            }
             break;
         }
         case 'x':{
-            space(counts);
+            if(flag!=1){
+                space(counts);
+            }
             int d = va_arg(*v,int);
             if(d<0){
                 putchar('-');
                 d = -(d);
             }
             process_int(d,100);
+            if(flag==1){
+                space(counts);
+            }
             break;
         }
         case 'p':{
-            space(counts);
+            if(flag!=1){
+                space(counts);
+            }
             int ptr = va_arg(*v, int);
             if(ptr<0){
                 ptr = -(ptr);
             }
             process_int(ptr,100);
+            if(flag==1){
+                space(counts);
+            }
             break;
         }
         default:{
@@ -246,7 +309,18 @@ void My_printf(const char *str,...){
             putchar(*(c++));
         }
         if(*c=='%'){
+            int flag = 0;
             c++;
+            if(*c=='-'){
+                flag = 1;
+                c++;
+            }
+            if(*c=='+'){
+                flag = 2;
+                c++;
+            }
+
+
             char *first = c;
             if(*c>='0'&&*c<='9'){
                 int count = 0,x = 1;
@@ -256,11 +330,11 @@ void My_printf(const char *str,...){
                     x*=10;
                     c++;
                 }
-                Switch(&c,&v,count,first);
+                Switch(&c,&v,count,first,flag);
                 c++;
             }
             else{
-                Switch(&c,&v,0,first);
+                Switch(&c,&v,0,first,flag);
                 c++;
             }
 
@@ -281,9 +355,9 @@ int main() {
     int oi = 071;
     void* pointer = &x;
     My_printf("测试的值为%12903132q 排除了非占位符时%的影响,"
-              "\ni的值为=%u 无符号整形,"
+              "\ni的值为=%-2u 无符号整形,"
               "\nd的值为=%d 有符号整形,"
-              "\nstr的值为=%s 字符串,"
+              "\nstr的值为=%-2s 字符串,"
               "\ns的值为=%c 字符,"
               "\nf的值为=%f 浮点,"
               "\ndouble的值为=%lf 双精度浮点,"
